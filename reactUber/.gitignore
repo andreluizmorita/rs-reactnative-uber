@@ -56,3 +56,6 @@ buck-out/
 *.jsbundle
 
 AndroidManifest.xml
+
+.env
+env.js

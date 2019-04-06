@@ -1,12 +1,15 @@
-import React, { Component } from "react";
-import { View } from "react-native";
+import React, { Component, Fragment } from "react";
+import { View, Image } from "react-native";
 import MapView, { Marker } from "react-native-maps";
+import Geocoder from "react-native-geocoding";
+
+import ENV from "../env";
+import { getPixelSize } from "../../utils";
+
 import Search from "../Search";
 import Directions from "../Directions";
-import { getPixelSize } from "../../utils";
-import ENV from "../env";
-import Geocoder from "react-native-geocoding";
-console.log(ENV);
+import Details from "../Details";
+
 import markerImage from "../../assets/marker.png";
 import backImage from "../../assets/back.png";
 
@@ -35,6 +38,7 @@ export default class Map extends Component {
         const response = await Geocoder.from({ latitude, longitude });
         const address = response.results[0].formatted_address;
         const location = address.substring(0, address.indexOf(","));
+
         this.setState({
           location,
           region: {
@@ -44,8 +48,8 @@ export default class Map extends Component {
             longitudeDelta: 0.0134
           }
         });
-      }, // success
-      () => {}, // erro
+      }, //sucesso
+      () => {}, //erro
       {
         timeout: 2000,
         enableHighAccuracy: true,
@@ -68,6 +72,10 @@ export default class Map extends Component {
     });
   };
 
+  handleBack = () => {
+    this.setState({ destination: null });
+  };
+
   render() {
     const { region, destination, duration, location } = this.state;
 
@@ -81,7 +89,7 @@ export default class Map extends Component {
           ref={el => (this.mapView = el)}
         >
           {destination && (
-            <>
+            <Fragment>
               <Directions
                 origin={region}
                 destination={destination}
@@ -107,6 +115,7 @@ export default class Map extends Component {
                   <LocationText>{destination.title}</LocationText>
                 </LocationBox>
               </Marker>
+
               <Marker coordinate={region} anchor={{ x: 0, y: 0 }}>
                 <LocationBox>
                   <LocationTimeBox>
@@ -116,10 +125,20 @@ export default class Map extends Component {
                   <LocationText>{location}</LocationText>
                 </LocationBox>
               </Marker>
-            </>
+            </Fragment>
           )}
         </MapView>
-        <Search onLocationSelected={this.handleLocationSelected} />
+
+        {destination ? (
+          <Fragment>
+            <Back onPress={this.handleBack}>
+              <Image source={backImage} />
+            </Back>
+            <Details />
+          </Fragment>
+        ) : (
+          <Search onLocationSelected={this.handleLocationSelected} />
+        )}
       </View>
     );
   }
